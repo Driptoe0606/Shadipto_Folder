@@ -21,43 +21,48 @@ water_norm = normalize(df['Water Peak'])
 spr_colors = [f'rgba(0, 102, 255, {0.4 + 0.6 * alpha})' for alpha in spr_norm]
 water_colors = [f'rgba(0, 204, 102, {0.4 + 0.6 * alpha})' for alpha in water_norm]
 
-# Plot
-fig = go.Figure()
+# Streamlit setup
+st.set_page_config(layout="wide")
+st.title("Nanoparticles SPR Analysis")
 
-fig.add_trace(go.Bar(
-    name='SPR Peak',
-    x=df['Sample'],
-    y=df['SPR Peak'],
-    marker_color=spr_colors,
-    marker_line_width=1,
-    marker_line_color='black'
-))
+# Create tabs
+tab1, tab2 = st.tabs(["📊 Bar Chart", "🔬 Microscope Images"])
 
-fig.add_trace(go.Bar(
-    name='Water Peak',
-    x=df['Sample'],
-    y=df['Water Peak'],
-    marker_color=water_colors,
-    marker_line_width=1,
-    marker_line_color='black'
-))
+# ========== TAB 1 ==========
+with tab1:
+    fig = go.Figure()
 
-fig.update_layout(
-    barmode='group',
-    title='SPR vs Water Peak',
-    xaxis_title='Sample',
-    yaxis_title='Value',
-    width=800,
-    height=500
-)
+    fig.add_trace(go.Bar(
+        name='SPR Peak',
+        x=df['Sample'],
+        y=df['SPR Peak'],
+        marker_color=spr_colors,
+        marker_line_width=1,
+        marker_line_color='black'
+    ))
 
-# Streamlit
-st.set_page_config(layout="centered")
-st.title("Nanoparticles SPR Peak Bar Chart")
-st.dataframe(df.set_index('Sample'))
-st.plotly_chart(fig, use_container_width=True)
+    fig.add_trace(go.Bar(
+        name='Water Peak',
+        x=df['Sample'],
+        y=df['Water Peak'],
+        marker_color=water_colors,
+        marker_line_width=1,
+        marker_line_color='black'
+    ))
 
-# ========== TAB 2: IMAGES ==========
+    fig.update_layout(
+        barmode='group',
+        title='SPR vs Water Peak',
+        xaxis_title='Sample',
+        yaxis_title='Value',
+        width=800,
+        height=500
+    )
+
+    st.dataframe(df.set_index('Sample'))
+    st.plotly_chart(fig, use_container_width=True)
+
+# ========== TAB 2 ==========
 with tab2:
     st.subheader("Microscope Images of Formulations")
 
