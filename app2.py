@@ -27,7 +27,7 @@ with tab1:
         y=df['SPR Peak'],
         marker=dict(
             color='rgba(0,102,255,0.6)',
-            pattern=dict(shape="dot", fgcolor="rgba(0,0,0,0.4)", size=6, solidity=0.1),
+            pattern=dict(shape="x", fgcolor="rgba(0,0,0,0.4)", size=6, solidity=0.1),
             line=dict(color='black', width=1)
         )
     ))
