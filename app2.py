@@ -62,11 +62,12 @@ def magnifier_html(img_src, label):
 with tab2:
     st.markdown("### Hover over the images to zoom into microscope details")
 
-    cols = st.columns(2)
-    image_labels = list(image_paths.keys())
+    col1, col2 = st.columns(2)
 
-    for i in range(0, 4, 2):
-        with cols[0]:
-            components.html(magnifier_html(image_paths[image_labels[i]], image_labels[i]), height=400)
-        with cols[1]:
-            components.html(magnifier_html(image_paths[image_labels[i+1]], image_labels[i+1]), height=400)
+    with col1:
+        components.html(magnifier_html(image_paths["F1"], "F1"), height=400)
+        components.html(magnifier_html(image_paths["F3"], "F3"), height=400)
+
+    with col2:
+        components.html(magnifier_html(image_paths["F2"], "F2"), height=400)
+        components.html(magnifier_html(image_paths["F4"], "F4"), height=400)
