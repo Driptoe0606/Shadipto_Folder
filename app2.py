@@ -53,82 +53,82 @@ with tab2:
     st.subheader("Zoomable SPR Images")
 
     def display_zoom_image(image_path):
-    st.markdown(f"#### {image_path}")
-    image = Image.open(image_path)
-    buffered = BytesIO()
-    image.save(buffered, format="JPEG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    data_url = f"data:image/jpeg;base64,{img_str}"
+        st.markdown(f"#### {image_path}")
+        image = Image.open(image_path)
+        buffered = BytesIO()
+        image.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        data_url = f"data:image/jpeg;base64,{img_str}"
 
-    components.html(f"""
-        <style>
-            .container {{
-                position: relative;
-                display: flex;
-                align-items: center;
-                gap: 30px;
-            }}
-            .zoom-img {{
-                width: 400px;
-                height: 300px;
-                border: 2px solid #ccc;
-            }}
-            .lens {{
-                position: absolute;
-                border: 2px solid #000;
-                border-radius: 50%;
-                width: 100px;
-                height: 100px;
-                pointer-events: none;
-                overflow: hidden;
-            }}
-            .result {{
-                border: 2px solid #000;
-                border-radius: 50%;
-                width: 200px;
-                height: 200px;
-                overflow: hidden;
-            }}
-            .result img {{
-                position: absolute;
-                transform: scale(2);
-            }}
-        </style>
+        components.html(f"""
+            <style>
+                .container {{
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    gap: 30px;
+                }}
+                .zoom-img {{
+                    width: 400px;
+                    height: 300px;
+                    border: 2px solid #ccc;
+                }}
+                .lens {{
+                    position: absolute;
+                    border: 2px solid #000;
+                    border-radius: 50%;
+                    width: 100px;
+                    height: 100px;
+                    pointer-events: none;
+                    overflow: hidden;
+                }}
+                .result {{
+                    border: 2px solid #000;
+                    border-radius: 50%;
+                    width: 200px;
+                    height: 200px;
+                    overflow: hidden;
+                }}
+                .result img {{
+                    position: absolute;
+                    transform: scale(2);
+                }}
+            </style>
 
-        <div class="container">
-            <div style="position:relative;">
-                <img src="{data_url}" id="img" class="zoom-img">
-                <div class="lens" id="lens"></div>
+            <div class="container">
+                <div style="position:relative;">
+                    <img src="{data_url}" id="img" class="zoom-img">
+                    <div class="lens" id="lens"></div>
+                </div>
+                <div class="result" id="result">
+                    <img src="{data_url}" id="zoomed">
+                </div>
             </div>
-            <div class="result" id="result">
-                <img src="{data_url}" id="zoomed">
-            </div>
-        </div>
 
-        <script>
-            const img = document.getElementById("img");
-            const lens = document.getElementById("lens");
-            const zoomed = document.getElementById("zoomed");
-            const result = document.getElementById("result");
+            <script>
+                const img = document.getElementById("img");
+                const lens = document.getElementById("lens");
+                const zoomed = document.getElementById("zoomed");
+                const result = document.getElementById("result");
 
-            img.addEventListener("mousemove", moveLens);
-            lens.addEventListener("mousemove", moveLens);
-            img.addEventListener("mouseleave", () => lens.style.display = "none");
+                img.addEventListener("mousemove", moveLens);
+                lens.addEventListener("mousemove", moveLens);
+                img.addEventListener("mouseleave", () => lens.style.display = "none");
 
-            function moveLens(e) {{
-                const rect = img.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                function moveLens(e) {{
+                    const rect = img.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
 
-                lens.style.display = "block";
-                lens.style.left = (x - 50) + "px";
-                lens.style.top = (y - 50) + "px";
+                    lens.style.display = "block";
+                    lens.style.left = (x - 50) + "px";
+                    lens.style.top = (y - 50) + "px";
 
-                zoomed.style.left = -(x * 2 - 100) + "px";
-                zoomed.style.top = -(y * 2 - 100) + "px";
-            }}
-        </script>
-    """, height=400)
+                    zoomed.style.left = -(x * 2 - 100) + "px";
+                    zoomed.style.top = -(y * 2 - 100) + "px";
+                }}
+            </script>
+        """, height=400)
 
 
     for img_name in ["F1.png.jpg", "F2.png.jpg", "F3.png.jpg", "F4.png.jpg"]:
