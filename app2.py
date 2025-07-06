@@ -1,81 +1,72 @@
 import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
-
-# Data
-df = pd.DataFrame({
-    'Sample': ['F1', 'F2', 'F3', 'F4'],
-    'SPR Peak': [0.757776, 0.013993, 0.017494, 0.493593],
-    'Water Peak': [0.021374, 0.050313, 0.031369, 0.009161]
-})
-
-# Normalize for color intensity
-def normalize(values):
-    min_val = min(values)
-    max_val = max(values)
-    return [(val - min_val) / (max_val - min_val) for val in values]
-
-spr_norm = normalize(df['SPR Peak'])
-water_norm = normalize(df['Water Peak'])
-
-spr_colors = [f'rgba(0, 102, 255, {0.4 + 0.6 * alpha})' for alpha in spr_norm]
-water_colors = [f'rgba(0, 204, 102, {0.4 + 0.6 * alpha})' for alpha in water_norm]
+import streamlit.components.v1 as components
 
 # Streamlit setup
 st.set_page_config(layout="wide")
-st.title("Nanoparticles SPR Analysis")
+st.title("Microscope Images with Hover Zoom")
 
-# Create tabs
-tab1, tab2 = st.tabs(["📊 Bar Chart", "🔬 Microscope Images"])
+# Tab layout
+tab1, tab2 = st.tabs(["📊 Chart (Coming Soon)", "🔬 Microscope Images"])
 
-# ========== TAB 1 ==========
-with tab1:
-    fig = go.Figure()
+# Image filenames
+image_paths = {
+    "F1": "F1.png.jpg",
+    "F2": "F2.png.jpg",
+    "F3": "F3.png.jpg",
+    "F4": "F4.png.jpg"
+}
 
-    fig.add_trace(go.Bar(
-        name='SPR Peak',
-        x=df['Sample'],
-        y=df['SPR Peak'],
-        marker_color=spr_colors,
-        marker_line_width=1,
-        marker_line_color='black'
-    ))
+# CSS + JS magnifier template
+def magnifier_html(img_src, label):
+    return f"""
+    <div style="text-align:center; margin: 20px;">
+        <h4>{label}</h4>
+        <div style="position: relative; display: inline-block;">
+            <img id="{label}" src="{img_src}" width="300" style="border: 2px solid #ccc; border-radius: 10px;">
+            <div id="lens-{label}" style="
+                position: absolute;
+                border: 2px solid #000;
+                border-radius: 50%;
+                width: 100px;
+                height: 100px;
+                visibility: hidden;
+                background-repeat: no-repeat;
+                background-size: 600px auto;
+                z-index: 10;">
+            </div>
+        </div>
+    </div>
 
-    fig.add_trace(go.Bar(
-        name='Water Peak',
-        x=df['Sample'],
-        y=df['Water Peak'],
-        marker_color=water_colors,
-        marker_line_width=1,
-        marker_line_color='black'
-    ))
+    <script>
+    const img_{label} = document.getElementById("{label}");
+    const lens_{label} = document.getElementById("lens-{label}");
 
-    fig.update_layout(
-        barmode='group',
-        title='SPR vs Water Peak',
-        xaxis_title='Sample',
-        yaxis_title='Value',
-        width=800,
-        height=500
-    )
+    img_{label}.addEventListener("mousemove", moveLens_{label});
+    lens_{label}.addEventListener("mousemove", moveLens_{label});
+    img_{label}.addEventListener("mouseenter", () => lens_{label}.style.visibility = "visible");
+    img_{label}.addEventListener("mouseleave", () => lens_{label}.style.visibility = "hidden");
 
-    st.dataframe(df.set_index('Sample'))
-    st.plotly_chart(fig, use_container_width=True)
+    function moveLens_{label}(e) {{
+        const rect = img_{label}.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-# ========== TAB 2 ==========
+        lens_{label}.style.left = (x - 50) + "px";
+        lens_{label}.style.top = (y - 50) + "px";
+        lens_{label}.style.backgroundImage = "url('{img_src}')";
+        lens_{label}.style.backgroundPosition = `-${x * 2 - 50}px -${y * 2 - 50}px`;
+    }}
+    </script>
+    """
+
 with tab2:
-    st.subheader("Microscope Images of Formulations")
+    st.markdown("### Hover over the images to zoom into microscope details")
 
-    cols = st.columns(4)
+    cols = st.columns(2)
+    image_labels = list(image_paths.keys())
 
-    with cols[0]:
-        st.image("F1.png.jpg", caption="F1", use_column_width=True)
-
-    with cols[1]:
-        st.image("F2.png.jpg", caption="F2", use_column_width=True)
-
-    with cols[2]:
-        st.image("F3.png.jpg", caption="F3", use_column_width=True)
-
-    with cols[3]:
-        st.image("F4.png.jpg", caption="F4", use_column_width=True)
+    for i in range(0, 4, 2):
+        with cols[0]:
+            components.html(magnifier_html(image_paths[image_labels[i]], image_labels[i]), height=400)
+        with cols[1]:
+            components.html(magnifier_html(image_paths[image_labels[i+1]], image_labels[i+1]), height=400)
