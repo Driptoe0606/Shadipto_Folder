@@ -53,7 +53,7 @@ fig.update_layout(
 
 # Streamlit
 st.set_page_config(layout="centered")
-st.title("SPR and Water Peak Bar Chart")
+st.title("Nanoparticles SPR Peak Bar Chart")
 st.dataframe(df.set_index('Sample'))
 st.plotly_chart(fig, use_container_width=True)
 
