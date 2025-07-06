@@ -1,72 +1,126 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+from PIL import Image
 import streamlit.components.v1 as components
 
-# Streamlit setup
-st.set_page_config(layout="wide")
-st.title("Microscope Images with Hover Zoom")
+# Set page config
+st.set_page_config(page_title="SPR Data Viewer", layout="wide")
 
-# Tab layout
-tab1, tab2 = st.tabs(["📊 Chart (Coming Soon)", "🔬 Microscope Images"])
-
-# Image filenames
-image_paths = {
-    "F1": "F1.png.jpg",
-    "F2": "F2.png.jpg",
-    "F3": "F3.png.jpg",
-    "F4": "F4.png.jpg"
+# Prepare data
+data = {
+    'Sample': ['F1', 'F2', 'F3', 'F4'],
+    'SPR Peak Avg': [0.757775970, 0.013993325, 0.017494279, 0.493592952],
+    'Water Peak Avg': [0.021373751, 0.050313009, 0.031368749, 0.009160527]
 }
+df_avg = pd.DataFrame(data)
 
-# CSS + JS magnifier template
-def magnifier_html(img_src, label):
-    return f"""
-    <div style="text-align:center; margin: 20px;">
-        <h4>{label}</h4>
-        <div style="position: relative; display: inline-block;">
-            <img id="{label}" src="{img_src}" width="300" style="border: 2px solid #ccc; border-radius: 10px;">
-            <div id="lens-{label}" style="
+# Tab structure
+tab1, tab2 = st.tabs(["📊 SPR Data", "🖼️ Zoomable Images"])
+
+with tab1:
+    st.subheader("SPR vs Water Peaks – Averaged")
+    fig = px.bar(df_avg, x='Sample', y=['SPR Peak Avg', 'Water Peak Avg'],
+                 barmode='group', labels={'value': 'Peak Intensity', 'variable': 'Type'},
+                 title="SPR vs Water Peaks")
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("Raw Data Table")
+    # Construct raw data
+    raw_data = {
+        'Sample': ['F1', 'F1', 'F1', 'F2', 'F2', 'F2', 'F3', 'F3', 'F3', 'F4', 'F4', 'F4'],
+        'SPR Peak': [
+            0.756670413, 0.758881526, 0.757775970,
+            0.009333486, 0.018653165, 0.013993325,
+            0.018995943, 0.015992615, 0.017494279,
+            0.496515963, 0.490669940, 0.493592952
+        ],
+        'Water Peak': [
+            0.021538112, 0.02120939, 0.021373751,
+            0.049883022, 0.050742997, 0.050313009,
+            0.031731754, 0.031005745, 0.031368749,
+            0.009061191, 0.009259863, 0.009160527
+        ],
+        'Wavelength': [392.7]*12
+    }
+    df_raw = pd.DataFrame(raw_data)
+    st.dataframe(df_raw, use_container_width=True)
+
+with tab2:
+    st.subheader("Zoomable SPR Images")
+
+    def display_zoom_image(image_name):
+        st.markdown(f"#### {image_name}")
+        components.html(f"""
+        <style>
+            .container {{
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 30px;
+            }}
+            .zoom-img {{
+                width: 400px;
+                height: 300px;
+                border: 2px solid #ccc;
+            }}
+            .lens {{
                 position: absolute;
                 border: 2px solid #000;
                 border-radius: 50%;
                 width: 100px;
                 height: 100px;
-                visibility: hidden;
-                background-repeat: no-repeat;
-                background-size: 600px auto;
-                z-index: 10;">
+                pointer-events: none;
+                overflow: hidden;
+            }}
+            .result {{
+                border: 2px solid #000;
+                border-radius: 50%;
+                width: 200px;
+                height: 200px;
+                overflow: hidden;
+            }}
+            .result img {{
+                position: absolute;
+                transform: scale(2);
+            }}
+        </style>
+
+        <div class="container">
+            <div style="position:relative;">
+                <img src="{image_name}" id="img" class="zoom-img">
+                <div class="lens" id="lens"></div>
+            </div>
+            <div class="result" id="result">
+                <img src="{image_name}" id="zoomed">
             </div>
         </div>
-    </div>
 
-    <script>
-    const img_{label} = document.getElementById("{label}");
-    const lens_{label} = document.getElementById("lens-{label}");
+        <script>
+            const img = document.getElementById("img");
+            const lens = document.getElementById("lens");
+            const zoomed = document.getElementById("zoomed");
+            const result = document.getElementById("result");
 
-    img_{label}.addEventListener("mousemove", moveLens_{label});
-    lens_{label}.addEventListener("mousemove", moveLens_{label});
-    img_{label}.addEventListener("mouseenter", () => lens_{label}.style.visibility = "visible");
-    img_{label}.addEventListener("mouseleave", () => lens_{label}.style.visibility = "hidden");
+            img.addEventListener("mousemove", moveLens);
+            lens.addEventListener("mousemove", moveLens);
+            img.addEventListener("mouseleave", () => lens.style.display = "none");
 
-    function moveLens_{label}(e) {{
-        const rect = img_{label}.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+            function moveLens(e) {{
+                const rect = img.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-        lens_{label}.style.left = (x - 50) + "px";
-        lens_{label}.style.top = (y - 50) + "px";
-        lens_{label}.style.backgroundImage = "url('{img_src}')";
-        lens_{label}.style.backgroundPosition = `-${x * 2 - 50}px -${y * 2 - 50}px`;
-    }}
-    </script>
-    """
+                lens.style.display = "block";
+                lens.style.left = (x - 50) + "px";
+                lens.style.top = (y - 50) + "px";
 
-with tab2:
-    st.markdown("### Hover over the images to zoom into microscope details")
+                zoomed.style.left = -(x * 2 - 100) + "px";
+                zoomed.style.top = -(y * 2 - 100) + "px";
+            }}
+        </script>
+        """, height=400)
 
-    cols = st.columns(2)
-    image_labels = list(image_paths.keys())
-
-    for i in range(0, 4, 2):
-        with cols[0]:
-            components.html(magnifier_html(image_paths[image_labels[i]], image_labels[i]), height=400)
-        with cols[1]:
-            components.html(magnifier_html(image_paths[image_labels[i+1]], image_labels[i+1]), height=400)
+    for img_name in ["F1.png.jpg", "F2.png.jpg", "F3.png.jpg", "F4.png.jpg"]:
+        display_zoom_image(img_name)
