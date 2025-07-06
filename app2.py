@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 from PIL import Image
 import streamlit.components.v1 as components
+import base64
+from io import BytesIO
 
 # Set page config
 st.set_page_config(page_title="SPR Data Viewer", layout="wide")
@@ -50,9 +52,15 @@ with tab1:
 with tab2:
     st.subheader("Zoomable SPR Images")
 
-    def display_zoom_image(image_name):
-        st.markdown(f"#### {image_name}")
-        components.html(f"""
+    def display_zoom_image(image_path):
+    st.markdown(f"#### {image_path}")
+    image = Image.open(image_path)
+    buffered = BytesIO()
+    image.save(buffered, format="JPEG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    data_url = f"data:image/jpeg;base64,{img_str}"
+
+    components.html(f"""
         <style>
             .container {{
                 position: relative;
@@ -89,11 +97,11 @@ with tab2:
 
         <div class="container">
             <div style="position:relative;">
-                <img src="{image_name}" id="img" class="zoom-img">
+                <img src="{data_url}" id="img" class="zoom-img">
                 <div class="lens" id="lens"></div>
             </div>
             <div class="result" id="result">
-                <img src="{image_name}" id="zoomed">
+                <img src="{data_url}" id="zoomed">
             </div>
         </div>
 
@@ -120,7 +128,8 @@ with tab2:
                 zoomed.style.top = -(y * 2 - 100) + "px";
             }}
         </script>
-        """, height=400)
+    """, height=400)
+
 
     for img_name in ["F1.png.jpg", "F2.png.jpg", "F3.png.jpg", "F4.png.jpg"]:
         display_zoom_image(img_name)
