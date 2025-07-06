@@ -59,76 +59,93 @@ with tab2:
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
         data_url = f"data:image/jpeg;base64,{img_str}"
+        width, height = image.size  # Get original size
 
         components.html(f"""
-            <style>
-                .container {{
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                    gap: 30px;
-                }}
-                .zoom-img {{
-                    width: 400px;
-                    height: 300px;
-                    border: 2px solid #ccc;
-                }}
-                .lens {{
-                    position: absolute;
-                    border: 2px solid #000;
-                    border-radius: 50%;
-                    width: 100px;
-                    height: 100px;
-                    pointer-events: none;
-                    overflow: hidden;
-                }}
-                .result {{
-                    border: 2px solid #000;
-                    border-radius: 50%;
-                    width: 200px;
-                    height: 200px;
-                    overflow: hidden;
-                }}
-                .result img {{
-                    position: absolute;
-                    transform: scale(2);
-                }}
-            </style>
+        <style>
+            .zoom-container {{
+                display: flex;
+                align-items: flex-start;
+                gap: 40px;
+            }}
 
-            <div class="container">
-                <div style="position:relative;">
-                    <img src="{data_url}" id="img" class="zoom-img">
-                    <div class="lens" id="lens"></div>
-                </div>
-                <div class="result" id="result">
-                    <img src="{data_url}" id="zoomed">
-                </div>
+            .image-box {{
+                position: relative;
+                display: inline-block;
+            }}
+
+            .image-box img {{
+                max-width: 100%;
+                height: auto;
+                display: block;
+            }}
+
+            .lens {{
+                position: absolute;
+                border: 2px solid #000;
+                border-radius: 50%;
+                width: 120px;
+                height: 120px;
+                pointer-events: none;
+                background: rgba(255, 255, 255, 0.3);
+                display: none;
+            }}
+
+            .result {{
+                border: 2px solid #000;
+                border-radius: 50%;
+                width: 240px;
+                height: 240px;
+                overflow: hidden;
+                position: relative;
+            }}
+
+            .result img {{
+                position: absolute;
+                transform: scale(2);
+                transform-origin: top left;
+            }}
+        </style>
+
+        <div class="zoom-container">
+            <div class="image-box">
+                <img id="main-img" src="{data_url}">
+                <div class="lens" id="lens"></div>
             </div>
+            <div class="result" id="result">
+                <img id="zoomed" src="{data_url}">
+            </div>
+        </div>
 
-            <script>
-                const img = document.getElementById("img");
-                const lens = document.getElementById("lens");
-                const zoomed = document.getElementById("zoomed");
-                const result = document.getElementById("result");
+        <script>
+            const img = document.getElementById("main-img");
+            const lens = document.getElementById("lens");
+            const zoomed = document.getElementById("zoomed");
+            const result = document.getElementById("result");
 
-                img.addEventListener("mousemove", moveLens);
-                lens.addEventListener("mousemove", moveLens);
-                img.addEventListener("mouseleave", () => lens.style.display = "none");
+            img.addEventListener("mousemove", moveLens);
+            img.addEventListener("mouseenter", () => lens.style.display = "block");
+            img.addEventListener("mouseleave", () => lens.style.display = "none");
 
-                function moveLens(e) {{
-                    const rect = img.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
+            function moveLens(e) {{
+                const rect = img.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-                    lens.style.display = "block";
-                    lens.style.left = (x - 50) + "px";
-                    lens.style.top = (y - 50) + "px";
+                const lensSize = lens.offsetWidth / 2;
+                let lensX = x - lensSize;
+                let lensY = y - lensSize;
 
-                    zoomed.style.left = -(x * 2 - 100) + "px";
-                    zoomed.style.top = -(y * 2 - 100) + "px";
-                }}
-            </script>
-        """, height=400)
+                lens.style.left = lensX + "px";
+                lens.style.top = lensY + "px";
+
+                const scale = 2;
+                zoomed.style.left = -(x * scale - result.offsetWidth / 2) + "px";
+                zoomed.style.top = -(y * scale - result.offsetHeight / 2) + "px";
+            }}
+        </script>
+        """, height=height // 2 + 260)  # Adjust height dynamically
+
 
 
     for img_name in ["F1.png.jpg", "F2.png.jpg", "F3.png.jpg", "F4.png.jpg"]:
