@@ -9,52 +9,53 @@ df = pd.DataFrame({
     'Water Peak': [0.021374, 0.050313, 0.031369, 0.009161]
 })
 
-# Streamlit setup
-st.set_page_config(layout="wide")
-st.title("Chitosan Nanoparticle Analysis")
+# Normalize for color intensity
+def normalize(values):
+    min_val = min(values)
+    max_val = max(values)
+    return [(val - min_val) / (max_val - min_val) for val in values]
 
-# Tabs for switching views
-tab1, tab2 = st.tabs(["📊 Bar Chart", "🔬 Microscope Images"])
+spr_norm = normalize(df['SPR Peak'])
+water_norm = normalize(df['Water Peak'])
 
-# ========== TAB 1: BAR CHART ==========
-with tab1:
-    # Bar chart logic
-    fig = go.Figure()
+spr_colors = [f'rgba(0, 102, 255, {0.4 + 0.6 * alpha})' for alpha in spr_norm]
+water_colors = [f'rgba(0, 204, 102, {0.4 + 0.6 * alpha})' for alpha in water_norm]
 
-    fig.add_trace(go.Bar(
-        name='SPR Peak',
-        x=df['Sample'],
-        y=df['SPR Peak'],
-        marker=dict(
-            color='rgba(0,102,255,0.6)',
-            pattern=dict(shape="x", fgcolor="rgba(0,0,0,0.4)", size=6, solidity=0.1),
-            line=dict(color='black', width=1)
-        )
-    ))
+# Plot
+fig = go.Figure()
 
-    fig.add_trace(go.Bar(
-        name='Water Peak',
-        x=df['Sample'],
-        y=df['Water Peak'],
-        marker=dict(
-            color='rgba(0,204,102,0.6)',
-            pattern=dict(shape="dot", fgcolor="rgba(0,0,0,0.4)", size=6, solidity=0.1),
-            line=dict(color='black', width=1)
-        )
-    ))
+fig.add_trace(go.Bar(
+    name='SPR Peak',
+    x=df['Sample'],
+    y=df['SPR Peak'],
+    marker_color=spr_colors,
+    marker_line_width=1,
+    marker_line_color='black'
+))
 
-    fig.update_layout(
-        barmode='group',
-        title='Bar Chart with Dotted Pattern: SPR vs Water Peak',
-        xaxis_title='Sample',
-        yaxis_title='Average Value',
-        width=800,
-        height=500,
-        showlegend=True
-    )
+fig.add_trace(go.Bar(
+    name='Water Peak',
+    x=df['Sample'],
+    y=df['Water Peak'],
+    marker_color=water_colors,
+    marker_line_width=1,
+    marker_line_color='black'
+))
 
-    st.dataframe(df.set_index('Sample'))
-    st.plotly_chart(fig, use_container_width=True)
+fig.update_layout(
+    barmode='group',
+    title='SPR vs Water Peak',
+    xaxis_title='Sample',
+    yaxis_title='Value',
+    width=800,
+    height=500
+)
+
+# Streamlit
+st.set_page_config(layout="centered")
+st.title("SPR and Water Peak Bar Chart")
+st.dataframe(df.set_index('Sample'))
+st.plotly_chart(fig, use_container_width=True)
 
 # ========== TAB 2: IMAGES ==========
 with tab2:
