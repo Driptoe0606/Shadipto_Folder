@@ -55,6 +55,6 @@ fig.update_layout(
 
 # Streamlit display
 st.set_page_config(layout="centered")
-st.title("Gradient Bar Chart: Per Column")
+st.title("Bar Chart: Per Column")
 st.dataframe(df.set_index('Sample'))
 st.plotly_chart(fig, use_container_width=True)
