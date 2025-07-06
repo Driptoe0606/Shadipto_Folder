@@ -64,13 +64,13 @@ with tab2:
     cols = st.columns(4)
 
     with cols[0]:
-        st.image("F1.png", caption="F1", use_column_width=True)
+        st.image("F1.png.jpg", caption="F1", use_column_width=True)
 
     with cols[1]:
-        st.image("F2.png", caption="F2", use_column_width=True)
+        st.image("F2.png.jpg", caption="F2", use_column_width=True)
 
     with cols[2]:
-        st.image("F3.png", caption="F3", use_column_width=True)
+        st.image("F3.png.jpg", caption="F3", use_column_width=True)
 
     with cols[3]:
-        st.image("F4.png", caption="F4", use_column_width=True)
+        st.image("F4.png.jpg", caption="F4", use_column_width=True)
